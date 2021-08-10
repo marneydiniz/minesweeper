@@ -10,7 +10,7 @@ public class Application {
 		Board board = new Board(6, 6, 3);
 		
 		new ConsoleBoard(board);
-		//teste
+
 	}
 
 }
