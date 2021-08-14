@@ -11,7 +11,7 @@ public class Board {
 	private int columns;
 	private int mines;
 	
-	private final List<Zone> zones = new ArrayList<Zone>();
+	private final List<Zone> zones = new ArrayList<>();
 
 	public Board(int lines, int columns, int mines) {
 		super();
@@ -26,7 +26,7 @@ public class Board {
 	
 	public void openZone(int line, int column) {
 		try {
-			zones.stream().filter(zone -> zone.getLine() == line && zone.getColumn() == column).findFirst().ifPresent(zone -> zone.open());
+			zones.stream().filter(zone -> zone.getLine() == line && zone.getColumn() == column).findFirst().ifPresent(Zone::open);
 		} catch (ExplosionException e) {
 			zones.forEach(zone -> zone.setOpen(true));
 			throw e;
@@ -34,7 +34,7 @@ public class Board {
 	}
 	
 	public void markZone(int line, int column) {
-		zones.stream().filter(zone -> zone.getLine() == line && zone.getColumn() == column).findFirst().ifPresent(zone -> zone.changeMarked());
+		zones.stream().filter(zone -> zone.getLine() == line && zone.getColumn() == column).findFirst().ifPresent(Zone::changeMarked);
 	}
 
 	private void createZones() {
@@ -58,16 +58,16 @@ public class Board {
 		while (armedMines < mines) {
 			int random = (int) (Math.random() * zones.size());
 			zones.get(random).changeMined();
-			armedMines = zones.stream().filter(zone -> zone.isMined()).count();
+			armedMines = zones.stream().filter(Zone::isMined).count();
 		}
 	}
 	
 	public boolean gameComplete() {
-		return zones.stream().allMatch(zone -> zone.questComplete());
+		return zones.stream().allMatch(Zone::questComplete);
 	}
 	
 	public void resetGame() {
-		zones.stream().forEach(zone -> zone.resetZone());
+		zones.forEach(Zone::resetZone);
 		mixUpMines();
 	}
 

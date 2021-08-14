@@ -47,15 +47,15 @@ public class ConsoleBoard {
 			while(!board.gameComplete()) {
 				System.out.println(board);
 				
-				String input = getConsoleInput("Enter (x, y): ");
+				String enter = getConsoleInput("Enter (line, column): ");
 				
-				Iterator<Integer> xy = Arrays.stream(input.split(",")).map(e -> Integer.parseInt(e.trim())).iterator();
+				Iterator<Integer> xy = Arrays.stream(enter.split(",")).map(e -> Integer.parseInt(e.trim())).iterator();
 				
-				input = getConsoleInput("1 to Open or 2 to (Un)mark: ");
+				enter = getConsoleInput("1 to Open or 2 to (Un)mark: ");
 				
-				if ("1".equalsIgnoreCase(input)) {
+				if ("1".equalsIgnoreCase(enter)) {
 					board.openZone(xy.next(), xy.next());
-				} else if("2".equalsIgnoreCase(input)) {
+				} else if("2".equalsIgnoreCase(enter)) {
 					board.markZone(xy.next(), xy.next());
 				}
 				

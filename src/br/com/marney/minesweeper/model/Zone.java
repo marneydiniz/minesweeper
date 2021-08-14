@@ -14,7 +14,7 @@ public class Zone {
 	private boolean mined = false;
 	private boolean marked = false;
 	
-	private List<Zone> neighbours = new ArrayList<Zone>();
+	private List<Zone> neighbours = new ArrayList<>();
 	
 	Zone (int line, int column){
 		this.line = line;
@@ -30,16 +30,12 @@ public class Zone {
 		int distanceColumn = Math.abs(this.column - neighbour.column);
 		int distance = distanceColumn + distanceLine;
 		
-		if (distance == 1 && !diagonal) {
-			neighbours.add(neighbour);
-			return true;
-		} else if (distance == 2 && diagonal) {
+		if ((distance == 1 && !diagonal) || (distance == 2 && diagonal)) {
 			neighbours.add(neighbour);
 			return true;
 		} else {
 			return false;
 		}
-		
 	}
 	
 	void changeMarked() {
