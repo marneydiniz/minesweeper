@@ -14,7 +14,7 @@ public class Zone {
 	private boolean mined = false;
 	private boolean marked = false;
 	
-	private List<Zone> neighbours = new ArrayList<>();
+	private List<Zone> neighbours = new ArrayList<Zone>();
 	
 	Zone (int line, int column){
 		this.line = line;
@@ -30,7 +30,10 @@ public class Zone {
 		int distanceColumn = Math.abs(this.column - neighbour.column);
 		int distance = distanceColumn + distanceLine;
 		
-		if ((distance == 1 && !diagonal) || (distance == 2 && diagonal)) {
+		if (distance == 1 && !diagonal) {
+			neighbours.add(neighbour);
+			return true;
+		} else if (distance == 2 && diagonal) {
 			neighbours.add(neighbour);
 			return true;
 		} else {
@@ -80,7 +83,7 @@ public class Zone {
 			}
 			
 			if(safeNeighbours()) {
-				neighbours.stream().forEach(Zone::open);
+				neighbours.stream().forEach(n -> n.open());
 			} return true;
 		} return false;
 	}
