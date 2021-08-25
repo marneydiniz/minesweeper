@@ -2,16 +2,16 @@ package br.com.marney.minesweeper.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
-import br.com.marney.minesweeper.exception.ExplosionException;
-
-public class Board {
+public class Board implements ZoneObserver {
 	
-	private int lines;
-	private int columns;
-	private int mines;
+	private final int lines;
+	private final int columns;
+	private final int mines;
 	
 	private final List<Zone> zones = new ArrayList<>();
+	private final List<BoardObserver> observers = new ArrayList<>(); 
 
 	public Board(int lines, int columns, int mines) {
 		super();
@@ -24,23 +24,59 @@ public class Board {
 		mixUpMines();
 	}
 	
+	public void forEachZone(Consumer<Zone> function) {
+		zones.forEach(function);
+	}
+	
+	public int getLines() {
+		return lines;
+	}
+
+	public int getColumns() {
+		return columns;
+	}
+
+	public void registerObserver(BoardObserver observer) {
+		observers.add(observer);
+	}
+
+	private void notifyObservers (boolean result) {
+		observers.forEach(o -> o.eventBoardUp(new ResultEvent(result)));
+	}
+	
 	public void openZone(int line, int column) {
-		try {
 			zones.stream().filter(zone -> zone.getLine() == line && zone.getColumn() == column).findFirst().ifPresent(Zone::open);
-		} catch (ExplosionException e) {
-			zones.forEach(zone -> zone.setOpen(true));
-			throw e;
-		}
 	}
 	
 	public void markZone(int line, int column) {
 		zones.stream().filter(zone -> zone.getLine() == line && zone.getColumn() == column).findFirst().ifPresent(Zone::changeMarked);
 	}
 
+	public boolean gameComplete() {
+		return zones.stream().allMatch(Zone::questComplete);
+	}
+	
+	public void resetGame() {
+		zones.forEach(Zone::resetZone);
+		mixUpMines();
+	}
+
+	@Override
+	public void eventUp(Zone zone, EventZone event) {
+		if(event == EventZone.EXPLOSION) {
+			showMines();
+			notifyObservers(false);
+		} else if (gameComplete()) {
+			notifyObservers(true);
+		}
+	}
+	
 	private void createZones() {
 		for (int line = 0; line < lines; line++) {
 			for (int column = 0; column < columns; column++) {
-				zones.add(new Zone(line, column));
+				Zone zone = new Zone(line, column);
+				zone.registerObserver(this);
+				zones.add(zone);
 			}
 		}
 	}
@@ -62,41 +98,8 @@ public class Board {
 		}
 	}
 	
-	public boolean gameComplete() {
-		return zones.stream().allMatch(Zone::questComplete);
+	private void showMines() {
+		zones.stream().filter(Zone::isMined).filter(z -> !z.isMarked()).forEach(zone -> zone.setOpen(true));
 	}
 	
-	public void resetGame() {
-		zones.forEach(Zone::resetZone);
-		mixUpMines();
-	}
-
-	public String toString() {
-		StringBuilder sb = new StringBuilder();
-		sb.append("  ");
-		for (int column = 0; column < columns; column++) {
-			sb.append(" ");
-			sb.append(column);
-			sb.append(" ");
-		}
-		sb.append("\n");
-		
-		int i = 0;
-		for (int line = 0; line < lines; line++) {
-			sb.append(" ");
-			sb.append(line);
-			for (int column = 0; column < columns; column++) {
-				sb.append(" ");
-				sb.append(zones.get(i));
-				sb.append(" ");
-				i++;
-			}
-			sb.append("\n");
-		}
-		return sb.toString();
-	}
-	
-	
-	
-
 }

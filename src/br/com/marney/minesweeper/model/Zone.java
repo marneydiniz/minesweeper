@@ -3,8 +3,6 @@ package br.com.marney.minesweeper.model;
 import java.util.ArrayList;
 import java.util.List;
 
-import br.com.marney.minesweeper.exception.ExplosionException;
-
 public class Zone {
 	
 	private final int line;
@@ -15,13 +13,14 @@ public class Zone {
 	private boolean marked = false;
 	
 	private List<Zone> neighbours = new ArrayList<>();
+	private List<ZoneObserver> observers = new ArrayList<>();
 	
-	Zone (int line, int column){
+	public Zone (int line, int column){
 		this.line = line;
 		this.column = column;
 	}
 	
-	boolean addNeighbour (Zone neighbour) {
+	public boolean addNeighbour (Zone neighbour) {
 		boolean distinctLine = this.line != neighbour.line;
 		boolean distinctColumn = this.column != neighbour.column;
 		boolean diagonal = distinctLine && distinctColumn;
@@ -36,18 +35,7 @@ public class Zone {
 		} else {
 			return false;
 		}
-	}
-	
-	void changeMarked() {
-		if(!open) {
-			marked = !marked;
-		}
-	}
-	
-	void changeMined() {
-		if(!mined) {
-			mined = true;
-		}
+		
 	}
 	
 	public boolean isMarked() {
@@ -56,10 +44,6 @@ public class Zone {
 	
 	public boolean isOpen() {
 		return open;
-	}
-	
-	void setOpen(boolean open) {
-		this.open = open;
 	}
 
 	public boolean isClosed() {
@@ -70,22 +54,29 @@ public class Zone {
 		return mined;
 	}
 	
-	boolean open() {
+	public boolean open() {
 		if (!open && !marked) {
-			open = true;
-			
 			if(mined) {
-				throw new ExplosionException(); 
+				notifyObservers(EventZone.EXPLOSION);
+				return true;
 			}
 			
+			setOpen(true);
+			
 			if(safeNeighbours()) {
-				neighbours.stream().forEach(n -> n.open());
+				neighbours.forEach(Zone::open);
 			} return true;
 		} return false;
 	}
 	
-	boolean safeNeighbours() {
+	public boolean safeNeighbours() {
 		return neighbours.stream().noneMatch(v -> v.mined);
+	}
+	
+	public boolean questComplete() {
+		boolean uncovered = !mined && open;
+		boolean covered = mined && marked;
+		return uncovered || covered;
 	}
 
 	public int getLine() {
@@ -96,33 +87,49 @@ public class Zone {
 		return column;
 	}
 	
-	boolean questComplete() {
-		boolean uncovered = !mined && open;
-		boolean covered = mined && marked;
-		return uncovered || covered;
-	}
-	
-	long minesOnNeighbour() {
-		return neighbours.stream().filter(neighbour -> neighbour.mined).count();
+	public int minesOnNeighbour() {
+		return (int) neighbours.stream().filter(neighbour -> neighbour.mined).count();
 	}
 
-	void resetZone() {
+	public void registerObserver (ZoneObserver observer) {
+		observers.add(observer);
+	}
+	
+	public void setOpen(boolean open) {
+		this.open = open;
+		
+		if (open) {
+			notifyObservers(EventZone.OPEN);
+		}
+	}
+	
+	public void resetZone() {
 		open = false;
 		mined = false;
 		marked = false;
+		notifyObservers(EventZone.RESET);
+	}
+
+	public void changeMarked() {
+		if(!open) {
+			marked = !marked;
+			
+			if (marked) {
+				notifyObservers(EventZone.MARKED);
+			} else {
+				notifyObservers(EventZone.UNMARKED);
+			}
+		}
 	}
 	
-	@Override
-	public String toString() {
-		if (marked) {
-			return "x";
-		} else if (open && mined) {
-			return "*";
-		} else if (open && minesOnNeighbour() > 0) {
-			return Long.toString(minesOnNeighbour());
-		} else if (open) {
-			return " ";
-		} return "?";
+	public void changeMined() {
+		if(!mined) {
+			mined = true;
+		}
+	}
+	
+	private void notifyObservers (EventZone event) {
+		observers.forEach(o -> o.eventUp(this, event));
 	}
 	
 }
