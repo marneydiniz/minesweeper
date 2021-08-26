@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
+import javax.swing.JFrame;
+
 public class Board implements ZoneObserver {
 	
 	private final int lines;
@@ -56,9 +58,11 @@ public class Board implements ZoneObserver {
 		return zones.stream().allMatch(Zone::questComplete);
 	}
 	
-	public void resetGame() {
+	public void resetGame(JFrame firstView, JFrame gameView) {
 		zones.forEach(Zone::resetZone);
 		mixUpMines();
+		firstView.setVisible(true);
+		gameView.dispose();
 	}
 
 	@Override

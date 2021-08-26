@@ -2,6 +2,7 @@ package br.com.marney.minesweeper.view;
 
 import java.awt.GridLayout;
 
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
@@ -11,7 +12,7 @@ import br.com.marney.minesweeper.model.Board;
 @SuppressWarnings("serial")
 public class BoardPanel extends JPanel {
 	
-	public BoardPanel(Board board) {
+	public BoardPanel(Board board, JFrame firstView, JFrame gameView) {
 		
 		setLayout(new GridLayout(board.getLines(), board.getColumns()));
 		
@@ -26,7 +27,8 @@ public class BoardPanel extends JPanel {
 					JOptionPane.showMessageDialog(this, "Game Over!");
 				}
 				
-				board.resetGame();
+				board.resetGame(firstView, gameView);
+				
 			});
 		});
 	}

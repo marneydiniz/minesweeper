@@ -71,7 +71,6 @@ public class ZoneButton extends JButton implements ZoneObserver, MouseListener {
 		
 		if (zone.isMined()) {
 			setBackground(EXPLOSION_BG);
-			setText("X");
 			return;
 		}
 		
